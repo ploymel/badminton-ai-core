@@ -1,2 +1,2 @@
-# badminton-ai-core
+# BadmintonAI Core
 A core repository of badminton AI project.
