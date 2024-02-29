@@ -28,7 +28,7 @@ def on_closing():
 def on_keypress(event):
     # Handle key events
     global user_choice
-    if event.keysym == 'Escape':
+    if event.keysym == "Escape":
         # If the ESC key was pressed, close the window or perform another action
         user_choice = False
         small_window.destroy()
@@ -58,7 +58,7 @@ def update_image():
     if not ret:
         # Video readout complete.
         return
-    frame = frame.astype('uint8')
+    frame = frame.astype("uint8")
     h, w = new_height, new_width
 
     # # Resize an image to a specified size
@@ -82,8 +82,7 @@ def update_image():
 
     if have_court:
         original_outputs, human_joints = pose_detect.get_human_joints(frame)
-        have_player, players_joints = court_detect.player_detection(
-            original_outputs)
+        have_player, players_joints = court_detect.player_detection(original_outputs)
 
         if have_player:
             court_frame = court_detect.draw_court(frame)
@@ -118,7 +117,7 @@ def key_press(event):
         refer_dict = {
             "frame": frame_counter,
             "court_info": court_info,
-            "net_info": net_info
+            "net_info": net_info,
         }
         write_json(refer_dict, video_name, "references")
 
@@ -154,11 +153,10 @@ def key_press(event):
     update_image()
 
 
-parser = argparse.ArgumentParser(description='para transfer')
-parser.add_argument('--folder_path',
-                    type=str,
-                    default="videos",
-                    help='folder_path -> str type.')
+parser = argparse.ArgumentParser(description="para transfer")
+parser.add_argument(
+    "--folder_path", type=str, default="videos", help="folder_path -> str type."
+)
 args = parser.parse_args()
 print(args)
 
@@ -178,10 +176,10 @@ new_height = 720
 for root, dirs, files in os.walk(folder_path):
     for file in files:
         _, ext = os.path.splitext(file)
-        if ext.lower() in ['.mp4']:
+        if ext.lower() in [".mp4"]:
 
             video_path = os.path.join(root, file)
-            video_name = os.path.basename(video_path).split('.')[0]
+            video_name = os.path.basename(video_path).split(".")[0]
 
             user_choice = True
             reference_path = find_reference(video_name)
@@ -189,29 +187,27 @@ for root, dirs, files in os.walk(folder_path):
                 # Create a window
                 small_window = tk.Tk()
                 small_window.title("delete file")
-                small_window.state('zoomed')
+                small_window.state("zoomed")
 
-                small_window.protocol("WM_DELETE_WINDOW",
-                                      on_closing)  # 将关闭事件连接到处理函数上
+                small_window.protocol(
+                    "WM_DELETE_WINDOW", on_closing
+                )  # 将关闭事件连接到处理函数上
 
                 # 将按键事件绑定到处理函数上
-                small_window.bind('<Key>', on_keypress)
+                small_window.bind("<Key>", on_keypress)
 
                 # Display the name of the file
-                label = tk.Label(small_window,
-                                 text="file name: " + reference_path)
+                label = tk.Label(small_window, text="file name: " + reference_path)
                 label.grid(row=0, column=0, columnspan=2, pady=10)
 
                 # Create a "Yes" button
-                yes_button = tk.Button(small_window,
-                                       text="yes",
-                                       command=yes_button_click)
+                yes_button = tk.Button(
+                    small_window, text="yes", command=yes_button_click
+                )
                 yes_button.grid(row=1, column=0, padx=10)
 
                 # Create a "No" button
-                no_button = tk.Button(small_window,
-                                      text="no",
-                                      command=no_button_click)
+                no_button = tk.Button(small_window, text="no", command=no_button_click)
                 no_button.grid(row=1, column=1, padx=10)
 
                 small_window.mainloop()
@@ -240,8 +236,8 @@ for root, dirs, files in os.walk(folder_path):
             window = tk.Tk()
 
             # 获取屏幕分辨率
-            screen_width = int(window.winfo_screenwidth()*0.85)
-            screen_height = int(window.winfo_screenheight()*0.85)
+            screen_width = int(window.winfo_screenwidth() * 0.85)
+            screen_height = int(window.winfo_screenheight() * 0.85)
 
             # 计算适合屏幕的大小
             frame_ratio = frame_width / frame_height
@@ -265,14 +261,13 @@ for root, dirs, files in os.walk(folder_path):
 
             window.title(f"Select valid frame from {video_name}")
             # window.geometry("800x600+200+100")
-            window.state('zoomed')
+            window.state("zoomed")
 
             # Create a right side image label
             image_label = tk.Label(window)
             image_label.pack()
 
             update_image()
-            
 
             # Binding Keyboard Event Handler Functions
             window.bind("<Key>", key_press)

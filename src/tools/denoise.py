@@ -4,15 +4,14 @@ import os
 import sys
 
 
-
-
 sys.path.append("src/tools")
 from utils import read_json, write_json
 from trajectory import Trajectory
 from trajectory_filter import TrajectoryFilter
 
-def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
-    #path = '41_predict.csv'
+
+def smooth(json_path, court, save_path="res/ball/loca_info(denoise)"):
+    # path = '41_predict.csv'
     json_name = os.path.splitext(os.path.basename(json_path))[0]
 
     df_ls = []
@@ -27,10 +26,9 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
     df = pd.DataFrame(df_ls)
     df = df.fillna(0)
     # df.to_csv("A.csv")
-    x = df['x'].tolist()
-    y = df['y'].tolist()
-    vis = df['visible'].tolist()
-
+    x = df["x"].tolist()
+    y = df["y"].tolist()
+    vis = df["visible"].tolist()
 
     # Define distance
     pre_dif = []
@@ -38,8 +36,7 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
         if i == 0:
             pre_dif.append(0)
         else:
-            pre_dif.append(
-                ((x[i] - x[i - 1])**2 + (y[i] - y[i - 1])**2)**(1 / 2))
+            pre_dif.append(((x[i] - x[i - 1]) ** 2 + (y[i] - y[i - 1]) ** 2) ** (1 / 2))
 
     abnormal = [0] * len(pre_dif)
     X_abn = x
@@ -55,33 +52,38 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
         elif i == len(pre_dif) - 3:
             abnormal[i] = 0
         elif pre_dif[i] >= 100 and pre_dif[i + 1] >= 100:
-            if vis[i:i + 2] == [1, 1]:  # and series[i:i+2] == [1,1]:
-                abnormal[i] = 'bias1'
+            if vis[i : i + 2] == [1, 1]:  # and series[i:i+2] == [1,1]:
+                abnormal[i] = "bias1"
                 X_abn[i] = 0
                 y_abn[i] = 0
         elif pre_dif[i] >= 100 and pre_dif[i + 2] >= 100:
             if pre_dif[i + 1] < dif_error:
-                if vis[i:i + 3] == [1, 1, 1]:  # and series[i:i+3] == [1,1,1]:
-                    abnormal[i:i + 2] = ['bias2', 'bias2']
-                    X_abn[i:i + 2] = [0, 0]
-                    y_abn[i:i + 2] = [0, 0]
-        elif i + 4 < len(pre_dif) and pre_dif[i] >= 100 and pre_dif[i +
-                                                                    3] >= 100:
+                if vis[i : i + 3] == [1, 1, 1]:  # and series[i:i+3] == [1,1,1]:
+                    abnormal[i : i + 2] = ["bias2", "bias2"]
+                    X_abn[i : i + 2] = [0, 0]
+                    y_abn[i : i + 2] = [0, 0]
+        elif i + 4 < len(pre_dif) and pre_dif[i] >= 100 and pre_dif[i + 3] >= 100:
             if pre_dif[i + 1] < dif_error and pre_dif[i + 2] < dif_error:
-                if vis[i:i + 4] == [1, 1, 1,
-                                    1]:  # and series[i:i+4] == [1,1,1,1]:
-                    abnormal[i:i + 3] = ['bias3', 'bias3', 'bias3']
-                    X_abn[i:i + 3] = [0, 0, 0]
-                    y_abn[i:i + 3] = [0, 0, 0]
-        elif i + 5 < len(pre_dif) and pre_dif[i] >= 100 and pre_dif[i +
-                                                                    4] >= 100:
-            if pre_dif[i + 1] < dif_error and pre_dif[
-                    i + 2] < dif_error and pre_dif[i + 3] < dif_error:
-                if vis[i:i + 5] == [1, 1, 1, 1,
-                                    1]:  # and series[i:i+5] == [1,1,1,1,1]:
-                    abnormal[i:i + 4] = ['bias4', 'bias4', 'bias4', 'bias4']
-                    X_abn[i:i + 4] = [0, 0, 0, 0]
-                    y_abn[i:i + 4] = [0, 0, 0, 0]
+                if vis[i : i + 4] == [1, 1, 1, 1]:  # and series[i:i+4] == [1,1,1,1]:
+                    abnormal[i : i + 3] = ["bias3", "bias3", "bias3"]
+                    X_abn[i : i + 3] = [0, 0, 0]
+                    y_abn[i : i + 3] = [0, 0, 0]
+        elif i + 5 < len(pre_dif) and pre_dif[i] >= 100 and pre_dif[i + 4] >= 100:
+            if (
+                pre_dif[i + 1] < dif_error
+                and pre_dif[i + 2] < dif_error
+                and pre_dif[i + 3] < dif_error
+            ):
+                if vis[i : i + 5] == [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                ]:  # and series[i:i+5] == [1,1,1,1,1]:
+                    abnormal[i : i + 4] = ["bias4", "bias4", "bias4", "bias4"]
+                    X_abn[i : i + 4] = [0, 0, 0, 0]
+                    y_abn[i : i + 4] = [0, 0, 0, 0]
 
     # # II. Poly line check
 
@@ -109,8 +111,8 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
             # print(df.iloc[i:i + 7])
             # print(vis2[i:i + 7])
             # print('sum(vis2[i:i+7]) : {}'.format(sum(vis2[i:i + 7])))
-        if sum(vis2[i:i + 7]) >= 2:
-            vis_window = np.array(vis2[i:i + 7])
+        if sum(vis2[i : i + 7]) >= 2:
+            vis_window = np.array(vis2[i : i + 7])
             loc = np.where(vis_window == 1)
             for k in loc:
                 x_ar = np.array(x_test)[i + k]
@@ -127,16 +129,16 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
                 y_ck_af[i + 7] = y_check_af
                 af_dis[i + 7] = abs(y_check_af - y_test[i + 7])
             elif vis[i + 7] == 0:
-                x_ck_af[i + 7] = 'NA'
-                y_ck_af[i + 7] = 'NA'
+                x_ck_af[i + 7] = "NA"
+                y_ck_af[i + 7] = "NA"
             if vis[i - 1] == 1:
                 y_check_bf = p1(x_test[i - 1])
                 x_ck_bf[i - 1] = x_test[i - 1]
                 y_ck_bf[i - 1] = y_check_bf
                 bf_dis[i - 1] = abs(y_check_bf - y_test[i - 1])
             elif vis[i - 1] == 0:
-                x_ck_bf[i - 1] = 'NA'
-                y_ck_bf[i - 1] = 'NA'
+                x_ck_bf[i - 1] = "NA"
+                y_ck_bf[i - 1] = "NA"
 
     # # III. 2nd Denoise
 
@@ -149,57 +151,80 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
             if bf_dis[i] > 30 and vis2[i] == 1:
                 x_test_2nd[i] = 0
                 y_test_2nd[i] = 0
-                abnormal2[i] = '2bias1'
-            elif i+2<len(df) and bf_dis[i + 1] > 30 \
-                and vis2[i + 1] == 1:
+                abnormal2[i] = "2bias1"
+            elif i + 2 < len(df) and bf_dis[i + 1] > 30 and vis2[i + 1] == 1:
                 if af_dis[i + 1] < 30:
-                    x_test_2nd[i:i + 2] = [0, 0]
-                    y_test_2nd[i:i + 2] = [0, 0]
-                    abnormal2[i:i + 2] = ['2bias2', '2bias2']
-            elif i+3<len(df) and bf_dis[i + 2] > 30 \
-                and vis2[i + 1:i + 3] == [1, 1]:
+                    x_test_2nd[i : i + 2] = [0, 0]
+                    y_test_2nd[i : i + 2] = [0, 0]
+                    abnormal2[i : i + 2] = ["2bias2", "2bias2"]
+            elif (
+                i + 3 < len(df) and bf_dis[i + 2] > 30 and vis2[i + 1 : i + 3] == [1, 1]
+            ):
                 if af_dis[i + 1] < 30 and af_dis[i + 2] < 30:
-                    x_test_2nd[i:i + 3] = [0, 0, 0]
-                    y_test_2nd[i:i + 3] = [0, 0, 0]
-                    abnormal2[i:i + 3] = ['2bias3', '2bias3', '2bias3']
-            elif i+4<len(df) and bf_dis[i + 3] > 30 \
-                and vis2[i + 1:i + 4] == [1, 1, 1]:
-                if af_dis[i + 1] < 30 and af_dis[i + 2] < 30 and af_dis[
-                        i + 3] < 30:
-                    x_test_2nd[i:i + 4] = [0, 0, 0, 0]
-                    y_test_2nd[i:i + 4] = [0, 0, 0, 0]
-                    abnormal2[i:i +
-                              4] = ['2bias4', '2bias4', '2bias4', '2bias4']
-            elif i+5<len(df) and bf_dis[i + 4] > 30\
-                and vis2[i + 1:i + 5] == [1, 1, 1, 1]:
-                if af_dis[i + 1] < 30 and af_dis[i + 2] < 30 and af_dis[
-                        i + 3] < 30 and af_dis[i + 4] < 30:
-                    x_test_2nd[i:i + 5] = [0, 0, 0, 0, 0]
-                    y_test_2nd[i:i + 5] = [0, 0, 0, 0, 0]
-                    abnormal2[i:i + 5] = [
-                        '2bias5', '2bias5', '2bias5', '2bias5', '2bias5'
+                    x_test_2nd[i : i + 3] = [0, 0, 0]
+                    y_test_2nd[i : i + 3] = [0, 0, 0]
+                    abnormal2[i : i + 3] = ["2bias3", "2bias3", "2bias3"]
+            elif (
+                i + 4 < len(df)
+                and bf_dis[i + 3] > 30
+                and vis2[i + 1 : i + 4] == [1, 1, 1]
+            ):
+                if af_dis[i + 1] < 30 and af_dis[i + 2] < 30 and af_dis[i + 3] < 30:
+                    x_test_2nd[i : i + 4] = [0, 0, 0, 0]
+                    y_test_2nd[i : i + 4] = [0, 0, 0, 0]
+                    abnormal2[i : i + 4] = ["2bias4", "2bias4", "2bias4", "2bias4"]
+            elif (
+                i + 5 < len(df)
+                and bf_dis[i + 4] > 30
+                and vis2[i + 1 : i + 5] == [1, 1, 1, 1]
+            ):
+                if (
+                    af_dis[i + 1] < 30
+                    and af_dis[i + 2] < 30
+                    and af_dis[i + 3] < 30
+                    and af_dis[i + 4] < 30
+                ):
+                    x_test_2nd[i : i + 5] = [0, 0, 0, 0, 0]
+                    y_test_2nd[i : i + 5] = [0, 0, 0, 0, 0]
+                    abnormal2[i : i + 5] = [
+                        "2bias5",
+                        "2bias5",
+                        "2bias5",
+                        "2bias5",
+                        "2bias5",
                     ]
-            elif i+6<len(df) and bf_dis[i + 5] > 30\
-                and vis2[i + 1:i + 6] == [1, 1, 1, 1, 1]:
-                if af_dis[i + 1] < 30 and af_dis[i + 2] < 30 and af_dis[
-                        i + 3] < 30 and af_dis[i + 4] < 30 and af_dis[i +
-                                                                      5] < 30:
-                    x_test_2nd[i:i + 6] = [0, 0, 0, 0, 0, 0]
-                    y_test_2nd[i:i + 6] = [0, 0, 0, 0, 0, 0]
-                    abnormal2[i:i + 6] = [
-                        '2bias6', '2bias6', '2bias6', '2bias6', '2bias6',
-                        '2bias6'
+            elif (
+                i + 6 < len(df)
+                and bf_dis[i + 5] > 30
+                and vis2[i + 1 : i + 6] == [1, 1, 1, 1, 1]
+            ):
+                if (
+                    af_dis[i + 1] < 30
+                    and af_dis[i + 2] < 30
+                    and af_dis[i + 3] < 30
+                    and af_dis[i + 4] < 30
+                    and af_dis[i + 5] < 30
+                ):
+                    x_test_2nd[i : i + 6] = [0, 0, 0, 0, 0, 0]
+                    y_test_2nd[i : i + 6] = [0, 0, 0, 0, 0, 0]
+                    abnormal2[i : i + 6] = [
+                        "2bias6",
+                        "2bias6",
+                        "2bias6",
+                        "2bias6",
+                        "2bias6",
+                        "2bias6",
                     ]
 
         elif af_dis[i] > 1000 and vis2[i] == 1:
             x_test_2nd[i] = 0
             y_test_2nd[i] = 0
-            abnormal2[i] = '2bias1'
+            abnormal2[i] = "2bias1"
 
         elif bf_dis[i] > 1000 and vis2[i] == 1:
             x_test_2nd[i] = 0
             y_test_2nd[i] = 0
-            abnormal2[i] = '2bias1'
+            abnormal2[i] = "2bias1"
 
     # # IV. Compensate
 
@@ -217,120 +242,133 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
     comp_ft = [0] * len(df)
     comp_bk = [0] * len(df)
     for i in range(len(vis3)):
-        if af_dis[i] != 0 and bf_dis[i] != 0 and af_dis[i] < 5 and bf_dis[
-                i] < 5:
-            if sum(vis3[i - 7:i]) != 7:  # front side compensate
+        if af_dis[i] != 0 and bf_dis[i] != 0 and af_dis[i] < 5 and bf_dis[i] < 5:
+            if sum(vis3[i - 7 : i]) != 7:  # front side compensate
                 # print(vis3[i - 7:i])
                 for k in range(5):
-                    if vis3[i - 7 + k:i - 4 + k] == [1, 0, 1]:
+                    if vis3[i - 7 + k : i - 4 + k] == [1, 0, 1]:
                         x_ev = (x_sm[i - 7 + k] + x_sm[i - 5 + k]) / 2
-                        y_ev = f2[i - 7] * x_ev * x_ev + f1[i - 7] * x_ev + f0[
-                            i - 7]
+                        y_ev = f2[i - 7] * x_ev * x_ev + f1[i - 7] * x_ev + f0[i - 7]
                         x_sm[i - 6 + k] = x_ev
                         y_sm[i - 6 + k] = y_ev
 
-                        vis3[i - 7 + k:i - 4 + k] = [1, 1, 1]
+                        vis3[i - 7 + k : i - 4 + k] = [1, 1, 1]
                 for k in range(4):
-                    if vis3[i - 7 + k:i - 3 + k] == [1, 0, 0, 1]:
+                    if vis3[i - 7 + k : i - 3 + k] == [1, 0, 0, 1]:
                         for j in range(1, 3):
-                            x_ev = ((x_sm[i - 4 + k] - x_sm[i - 7 + k]) /
-                                    3) * j + x_sm[i - 7 + k]
-                            y_ev = f2[i - 7] * x_ev * x_ev + f1[
-                                i - 7] * x_ev + f0[i - 7]
+                            x_ev = ((x_sm[i - 4 + k] - x_sm[i - 7 + k]) / 3) * j + x_sm[
+                                i - 7 + k
+                            ]
+                            y_ev = (
+                                f2[i - 7] * x_ev * x_ev + f1[i - 7] * x_ev + f0[i - 7]
+                            )
                             x_sm[i - 7 + k + j] = x_ev
                             y_sm[i - 7 + k + j] = y_ev
 
-                        vis3[i - 7 + k:i - 3 + k] = [1, 1, 1, 1]
+                        vis3[i - 7 + k : i - 3 + k] = [1, 1, 1, 1]
                 for k in range(3):
-                    if vis3[i - 7 + k:i - 2 + k] == [1, 0, 0, 0, 1]:
+                    if vis3[i - 7 + k : i - 2 + k] == [1, 0, 0, 0, 1]:
                         for j in range(1, 4):
-                            x_ev = ((x_sm[i - 3 + k] - x_sm[i - 7 + k]) /
-                                    4) * j + x_sm[i - 7 + k]
-                            y_ev = f2[i - 7] * x_ev * x_ev + f1[
-                                i - 7] * x_ev + f0[i - 7]
+                            x_ev = ((x_sm[i - 3 + k] - x_sm[i - 7 + k]) / 4) * j + x_sm[
+                                i - 7 + k
+                            ]
+                            y_ev = (
+                                f2[i - 7] * x_ev * x_ev + f1[i - 7] * x_ev + f0[i - 7]
+                            )
                             x_sm[i - 7 + k + j] = x_ev
                             y_sm[i - 7 + k + j] = y_ev
 
-                        vis3[i - 7 + k:i - 2 + k] = [1, 1, 1, 1, 1]
+                        vis3[i - 7 + k : i - 2 + k] = [1, 1, 1, 1, 1]
                 for k in range(2):
-                    if vis3[i - 7 + k:i - 1 + k] == [1, 0, 0, 0, 0, 1]:
+                    if vis3[i - 7 + k : i - 1 + k] == [1, 0, 0, 0, 0, 1]:
                         for j in range(1, 5):
-                            x_ev = ((x_sm[i - 2 + k] - x_sm[i - 7 + k]) /
-                                    5) * j + x_sm[i - 7 + k]
-                            y_ev = f2[i - 7] * x_ev * x_ev + f1[
-                                i - 7] * x_ev + f0[i - 7]
+                            x_ev = ((x_sm[i - 2 + k] - x_sm[i - 7 + k]) / 5) * j + x_sm[
+                                i - 7 + k
+                            ]
+                            y_ev = (
+                                f2[i - 7] * x_ev * x_ev + f1[i - 7] * x_ev + f0[i - 7]
+                            )
                             x_sm[i - 7 + k + j] = x_ev
                             y_sm[i - 7 + k + j] = y_ev
 
-                        vis3[i - 7 + k:i - 1 + k] = [1, 1, 1, 1, 1, 1]
+                        vis3[i - 7 + k : i - 1 + k] = [1, 1, 1, 1, 1, 1]
                 for k in range(1):
-                    if vis3[i - 7 + k:i + k] == [1, 0, 0, 0, 0, 0, 1]:
+                    if vis3[i - 7 + k : i + k] == [1, 0, 0, 0, 0, 0, 1]:
                         for j in range(1, 6):
-                            x_ev = ((x_sm[i - 1 + k] - x_sm[i - 7 + k]) /
-                                    6) * j + x_sm[i - 7 + k]
-                            y_ev = f2[i - 7] * x_ev * x_ev + f1[
-                                i - 7] * x_ev + f0[i - 7]
+                            x_ev = ((x_sm[i - 1 + k] - x_sm[i - 7 + k]) / 6) * j + x_sm[
+                                i - 7 + k
+                            ]
+                            y_ev = (
+                                f2[i - 7] * x_ev * x_ev + f1[i - 7] * x_ev + f0[i - 7]
+                            )
                             x_sm[i - 7 + k + j] = x_ev
                             y_sm[i - 7 + k + j] = y_ev
 
-                        vis3[i - 7 + k:i + k] = [1, 1, 1, 1, 1, 1, 1]
+                        vis3[i - 7 + k : i + k] = [1, 1, 1, 1, 1, 1, 1]
 
-            if sum(vis3[i + 1:i + 8]) != 7:  # back side compensate
+            if sum(vis3[i + 1 : i + 8]) != 7:  # back side compensate
                 # print(vis3[i + 1:i + 8])
                 for k in range(5):
-                    if vis3[i + 1 + k:i + 4 + k] == [1, 0, 1]:
+                    if vis3[i + 1 + k : i + 4 + k] == [1, 0, 1]:
                         x_ev = (x_sm[i + 1 + k] + x_sm[i + 3 + k]) / 2
-                        y_ev = f2[i + 1] * x_ev * x_ev + f1[i + 1] * x_ev + f0[
-                            i + 1]
+                        y_ev = f2[i + 1] * x_ev * x_ev + f1[i + 1] * x_ev + f0[i + 1]
                         x_sm[i + 2 + k] = x_ev
                         y_sm[i + 2 + k] = y_ev
 
-                        vis3[i + 1 + k:i + 4 + k] = [1, 1, 1]
+                        vis3[i + 1 + k : i + 4 + k] = [1, 1, 1]
                 for k in range(4):
-                    if vis3[i + 1 + k:i + 5 + k] == [1, 0, 0, 1]:
+                    if vis3[i + 1 + k : i + 5 + k] == [1, 0, 0, 1]:
                         for j in range(1, 3):
-                            x_ev = ((x_sm[i + 4 + k] - x_sm[i + 1 + k]) /
-                                    3) * j + x_sm[i + 1 + k]
-                            y_ev = f2[i + 1] * x_ev * x_ev + f1[
-                                i + 1] * x_ev + f0[i + 1]
+                            x_ev = ((x_sm[i + 4 + k] - x_sm[i + 1 + k]) / 3) * j + x_sm[
+                                i + 1 + k
+                            ]
+                            y_ev = (
+                                f2[i + 1] * x_ev * x_ev + f1[i + 1] * x_ev + f0[i + 1]
+                            )
                             x_sm[i + 1 + k + j] = x_ev
                             y_sm[i + 1 + k + j] = y_ev
 
-                        vis3[i + 1 + k:i + 5 + k] = [1, 1, 1, 1]
+                        vis3[i + 1 + k : i + 5 + k] = [1, 1, 1, 1]
                 for k in range(3):
-                    if vis3[i + 1 + k:i + 6 + k] == [1, 0, 0, 0, 1]:
+                    if vis3[i + 1 + k : i + 6 + k] == [1, 0, 0, 0, 1]:
                         for j in range(1, 4):
-                            x_ev = ((x_sm[i + 5 + k] - x_sm[i + 1 + k]) /
-                                    4) * j + x_sm[i + 1 + k]
-                            y_ev = f2[i + 1] * x_ev * x_ev + f1[
-                                i + 1] * x_ev + f0[i + 1]
+                            x_ev = ((x_sm[i + 5 + k] - x_sm[i + 1 + k]) / 4) * j + x_sm[
+                                i + 1 + k
+                            ]
+                            y_ev = (
+                                f2[i + 1] * x_ev * x_ev + f1[i + 1] * x_ev + f0[i + 1]
+                            )
                             x_sm[i + 1 + k + j] = x_ev
                             y_sm[i + 1 + k + j] = y_ev
 
-                        vis3[i + 1 + k:i + 6 + k] = [1, 1, 1, 1, 1]
+                        vis3[i + 1 + k : i + 6 + k] = [1, 1, 1, 1, 1]
                 for k in range(2):
-                    if vis3[i + 1 + k:i + 7 + k] == [1, 0, 0, 0, 0, 1]:
+                    if vis3[i + 1 + k : i + 7 + k] == [1, 0, 0, 0, 0, 1]:
                         for j in range(1, 5):
-                            x_ev = ((x_sm[i + 6 + k] - x_sm[i + 1 + k]) /
-                                    5) * j + x_sm[i + 1 + k]
-                            y_ev = f2[i + 1] * x_ev * x_ev + f1[
-                                i + 1] * x_ev + f0[i + 1]
+                            x_ev = ((x_sm[i + 6 + k] - x_sm[i + 1 + k]) / 5) * j + x_sm[
+                                i + 1 + k
+                            ]
+                            y_ev = (
+                                f2[i + 1] * x_ev * x_ev + f1[i + 1] * x_ev + f0[i + 1]
+                            )
                             x_sm[i + 1 + k + j] = x_ev
                             y_sm[i + 1 + k + j] = y_ev
 
-                        vis3[i + 1 + k:i + 7 + k] = [1, 1, 1, 1, 1, 1]
+                        vis3[i + 1 + k : i + 7 + k] = [1, 1, 1, 1, 1, 1]
 
                 for k in range(1):
-                    if vis3[i + 1 + k:i + 8 + k] == [1, 0, 0, 0, 0, 0, 1]:
+                    if vis3[i + 1 + k : i + 8 + k] == [1, 0, 0, 0, 0, 0, 1]:
                         for j in range(1, 5):
-                            x_ev = ((x_sm[i + 7 + k] - x_sm[i + 1 + k]) /
-                                    6) * j + x_sm[i + 1 + k]
-                            y_ev = f2[i + 1] * x_ev * x_ev + f1[
-                                i + 1] * x_ev + f0[i + 1]
+                            x_ev = ((x_sm[i + 7 + k] - x_sm[i + 1 + k]) / 6) * j + x_sm[
+                                i + 1 + k
+                            ]
+                            y_ev = (
+                                f2[i + 1] * x_ev * x_ev + f1[i + 1] * x_ev + f0[i + 1]
+                            )
                             x_sm[i + 1 + k + j] = x_ev
                             y_sm[i + 1 + k + j] = y_ev
 
-                        vis3[i + 1 + k:i + 8 + k] = [1, 1, 1, 1, 1, 1, 1]
+                        vis3[i + 1 + k : i + 8 + k] = [1, 1, 1, 1, 1, 1, 1]
 
     # # V. 2nd Compensate
 
@@ -347,7 +385,7 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
     for i in range(len(vis4)):
         if i == 0:
             mis1.append(0)
-        elif vis4[i - 1:i + 2] == [1, 0, 1]:
+        elif vis4[i - 1 : i + 2] == [1, 0, 1]:
             mis1.append(1)
         elif i == len(vis4):
             mis1.append(0)
@@ -356,7 +394,7 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
     for i in range(len(vis4)):
         if i == 0:
             mis2.append(0)
-        elif vis4[i - 1:i + 3] == [1, 0, 0, 1]:
+        elif vis4[i - 1 : i + 3] == [1, 0, 0, 1]:
             mis2.append(1)
         elif i == len(vis4) - 1:
             mis2.append(0)
@@ -367,7 +405,7 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
     for i in range(len(vis4)):
         if i == 0:
             mis3.append(0)
-        elif vis4[i - 1:i + 4] == [1, 0, 0, 0, 1]:
+        elif vis4[i - 1 : i + 4] == [1, 0, 0, 0, 1]:
             mis3.append(1)
         elif i == len(vis4) - 2:
             mis3.append(0)
@@ -380,7 +418,7 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
     for i in range(len(vis4)):
         if i == 0:
             mis4.append(0)
-        elif vis4[i - 1:i + 5] == [1, 0, 0, 0, 0, 1]:
+        elif vis4[i - 1 : i + 5] == [1, 0, 0, 0, 0, 1]:
             mis4.append(1)
         elif i == len(vis4) - 3:
             mis4.append(0)
@@ -395,7 +433,7 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
     for i in range(len(vis4)):
         if i == 0:
             mis5.append(0)
-        elif vis4[i - 1:i + 6] == [1, 0, 0, 0, 0, 0, 1]:
+        elif vis4[i - 1 : i + 6] == [1, 0, 0, 0, 0, 0, 1]:
             mis5.append(1)
         elif i == len(vis4) - 4:
             mis5.append(0)
@@ -416,8 +454,14 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
     mis1_X = []
     mis1_y = []
     for i in range(len(mis1)):
-        if i == 0 or i == 1 or i == 2 or i == len(
-                mis1) or i == len(mis1) - 1 or i == len(mis1) - 2:
+        if (
+            i == 0
+            or i == 1
+            or i == 2
+            or i == len(mis1)
+            or i == len(mis1) - 1
+            or i == len(mis1) - 2
+        ):
             mis1_X.append(x_sm2[i])
             mis1_y.append(y_sm2[i])
         elif mis1[i] == 0:
@@ -446,8 +490,14 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
     mis2_X = []
     mis2_y = []
     for i in range(len(mis2)):
-        if i == 0 or i == 1 or i == 2 or i == len(
-                mis2) or i == len(mis2) - 1 or i == len(mis2) - 2:
+        if (
+            i == 0
+            or i == 1
+            or i == 2
+            or i == len(mis2)
+            or i == len(mis2) - 1
+            or i == len(mis2) - 2
+        ):
             mis2_X.append(mis1_X[i])
             mis2_y.append(mis1_y[i])
 
@@ -455,24 +505,32 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
             mis2_X.append(mis1_X[i])
             mis2_y.append(mis1_y[i])
 
-        elif mis2[i] == 1 and i+4<len(mis1_X):
+        elif mis2[i] == 1 and i + 4 < len(mis1_X):
             miss_point = i
-            
-            if mis1_X[miss_point -
-                      3] != 0 and mis1_X[miss_point - 2] != 0 and mis1_X[
-                          miss_point -
-                          1] != 0 and mis1_X[miss_point + 2] != 0 and mis1_X[
-                              miss_point + 3] != 0 and mis1_X[miss_point +
-                                                              4] != 0:
+
+            if (
+                mis1_X[miss_point - 3] != 0
+                and mis1_X[miss_point - 2] != 0
+                and mis1_X[miss_point - 1] != 0
+                and mis1_X[miss_point + 2] != 0
+                and mis1_X[miss_point + 3] != 0
+                and mis1_X[miss_point + 4] != 0
+            ):
                 num_X = [
-                    mis1_X[miss_point - 3], mis1_X[miss_point - 2],
-                    mis1_X[miss_point - 1], mis1_X[miss_point + 2],
-                    mis1_X[miss_point + 3], mis1_X[miss_point + 4]
+                    mis1_X[miss_point - 3],
+                    mis1_X[miss_point - 2],
+                    mis1_X[miss_point - 1],
+                    mis1_X[miss_point + 2],
+                    mis1_X[miss_point + 3],
+                    mis1_X[miss_point + 4],
                 ]
                 num_y = [
-                    mis1_y[miss_point - 3], mis1_y[miss_point - 2],
-                    mis1_y[miss_point - 1], mis1_y[miss_point + 2],
-                    mis1_y[miss_point + 3], mis1_y[miss_point + 4]
+                    mis1_y[miss_point - 3],
+                    mis1_y[miss_point - 2],
+                    mis1_y[miss_point - 1],
+                    mis1_y[miss_point + 2],
+                    mis1_y[miss_point + 3],
+                    mis1_y[miss_point + 4],
                 ]
                 x_mis2 = np.array(num_X)
                 y_mis2 = np.array(num_y)
@@ -483,8 +541,8 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
 
                 for j in range(1, 3):
                     insert_X = (
-                        (mis1_X[miss_point + 2] - mis1_X[miss_point - 1]) /
-                        3) * j + mis1_X[miss_point - 1]
+                        (mis1_X[miss_point + 2] - mis1_X[miss_point - 1]) / 3
+                    ) * j + mis1_X[miss_point - 1]
                     insert_y = np.polyval(f1, insert_X)
                     mis2_X.append(insert_X)
                     mis2_y.append(insert_y)
@@ -497,34 +555,48 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
     mis3_X = []
     mis3_y = []
     for i in range(len(mis3)):
-        if i >=len(mis2_X):
+        if i >= len(mis2_X):
             break
-        if i == 0 or i == 1 or i == 2 or i == len(
-                mis3) or i == len(mis3) - 1 or i == len(mis3) - 2:
+        if (
+            i == 0
+            or i == 1
+            or i == 2
+            or i == len(mis3)
+            or i == len(mis3) - 1
+            or i == len(mis3) - 2
+        ):
             mis3_X.append(mis2_X[i])
             mis3_y.append(mis2_y[i])
 
-        elif mis3[i - 2:i + 1] == [0, 0, 0]:
+        elif mis3[i - 2 : i + 1] == [0, 0, 0]:
             mis3_X.append(mis2_X[i])
             mis3_y.append(mis2_y[i])
 
         elif mis3[i] == 1:
             miss_point = i
-            if mis2_X[miss_point -
-                      3] != 0 and mis2_X[miss_point - 2] != 0 and mis2_X[
-                          miss_point -
-                          1] != 0 and mis2_X[miss_point + 3] != 0 and mis2_X[
-                              miss_point + 4] != 0 and mis1_X[miss_point +
-                                                              5] != 0:
+            if (
+                mis2_X[miss_point - 3] != 0
+                and mis2_X[miss_point - 2] != 0
+                and mis2_X[miss_point - 1] != 0
+                and mis2_X[miss_point + 3] != 0
+                and mis2_X[miss_point + 4] != 0
+                and mis1_X[miss_point + 5] != 0
+            ):
                 num_X = [
-                    mis2_X[miss_point - 3], mis2_X[miss_point - 2],
-                    mis2_X[miss_point - 1], mis2_X[miss_point + 3],
-                    mis2_X[miss_point + 4], mis2_X[miss_point + 5]
+                    mis2_X[miss_point - 3],
+                    mis2_X[miss_point - 2],
+                    mis2_X[miss_point - 1],
+                    mis2_X[miss_point + 3],
+                    mis2_X[miss_point + 4],
+                    mis2_X[miss_point + 5],
                 ]
                 num_y = [
-                    mis2_y[miss_point - 3], mis2_y[miss_point - 2],
-                    mis2_y[miss_point - 1], mis2_y[miss_point + 3],
-                    mis2_y[miss_point + 4], mis2_y[miss_point + 5]
+                    mis2_y[miss_point - 3],
+                    mis2_y[miss_point - 2],
+                    mis2_y[miss_point - 1],
+                    mis2_y[miss_point + 3],
+                    mis2_y[miss_point + 4],
+                    mis2_y[miss_point + 5],
                 ]
                 x_mis3 = np.array(num_X)
                 y_mis3 = np.array(num_y)
@@ -535,8 +607,8 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
 
                 for j in range(1, 4):
                     insert_X = (
-                        (mis2_X[miss_point + 3] - mis2_X[miss_point - 1]) /
-                        4) * j + mis2_X[miss_point - 1]
+                        (mis2_X[miss_point + 3] - mis2_X[miss_point - 1]) / 4
+                    ) * j + mis2_X[miss_point - 1]
                     insert_y = np.polyval(f1, insert_X)
                     mis3_X.append(insert_X)
                     mis3_y.append(insert_y)
@@ -551,34 +623,51 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
     mis4_X = []
     mis4_y = []
     for i in range(len(mis4)):
-        if i >=len(mis3_X):
+        if i >= len(mis3_X):
             break
-        if i == 0 or i == 1 or i == 2 or i == len(
-                mis4) or i == len(mis4) - 1 or i == len(mis4) - 2:
+        if (
+            i == 0
+            or i == 1
+            or i == 2
+            or i == len(mis4)
+            or i == len(mis4) - 1
+            or i == len(mis4) - 2
+        ):
             mis4_X.append(mis3_X[i])
             mis4_y.append(mis3_y[i])
-        elif mis4[i - 3:i + 1] == [0, 0, 0, 0]:
+        elif mis4[i - 3 : i + 1] == [0, 0, 0, 0]:
             mis4_X.append(mis3_X[i])
             mis4_y.append(mis3_y[i])
 
         elif mis4[i] == 1:
             miss_point = i
-            
-            if i+6<len(mis3_X) and i+5<len(mis3_X) and i+4<len(mis3_X) and  mis3_X[miss_point -
-                      3] != 0 and mis3_X[miss_point - 2] != 0 and mis3_X[
-                          miss_point -
-                          1] != 0 and mis3_X[miss_point + 4] != 0 and mis3_X[
-                              miss_point + 5] != 0 and mis3_X[miss_point +
-                                                              6] != 0:
+
+            if (
+                i + 6 < len(mis3_X)
+                and i + 5 < len(mis3_X)
+                and i + 4 < len(mis3_X)
+                and mis3_X[miss_point - 3] != 0
+                and mis3_X[miss_point - 2] != 0
+                and mis3_X[miss_point - 1] != 0
+                and mis3_X[miss_point + 4] != 0
+                and mis3_X[miss_point + 5] != 0
+                and mis3_X[miss_point + 6] != 0
+            ):
                 num_X = [
-                    mis3_X[miss_point - 3], mis3_X[miss_point - 2],
-                    mis3_X[miss_point - 1], mis3_X[miss_point + 4],
-                    mis3_X[miss_point + 5], mis3_X[miss_point + 6]
+                    mis3_X[miss_point - 3],
+                    mis3_X[miss_point - 2],
+                    mis3_X[miss_point - 1],
+                    mis3_X[miss_point + 4],
+                    mis3_X[miss_point + 5],
+                    mis3_X[miss_point + 6],
                 ]
                 num_y = [
-                    mis3_y[miss_point - 3], mis3_y[miss_point - 2],
-                    mis3_y[miss_point - 1], mis3_y[miss_point + 4],
-                    mis3_y[miss_point + 5], mis3_y[miss_point + 6]
+                    mis3_y[miss_point - 3],
+                    mis3_y[miss_point - 2],
+                    mis3_y[miss_point - 1],
+                    mis3_y[miss_point + 4],
+                    mis3_y[miss_point + 5],
+                    mis3_y[miss_point + 6],
                 ]
                 x_mis4 = np.array(num_X)
                 y_mis4 = np.array(num_y)
@@ -589,8 +678,8 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
 
                 for j in range(1, 5):
                     insert_X = (
-                        (mis3_X[miss_point + 4] - mis3_X[miss_point - 1]) /
-                        5) * j + mis3_X[miss_point - 1]
+                        (mis3_X[miss_point + 4] - mis3_X[miss_point - 1]) / 5
+                    ) * j + mis3_X[miss_point - 1]
                     insert_y = np.polyval(f1, insert_X)
                     mis4_X.append(insert_X)
                     mis4_y.append(insert_y)
@@ -607,34 +696,55 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
     mis5_X = []
     mis5_y = []
     for i in range(len(mis5)):
-        if i >=len(mis4_X):
+        if i >= len(mis4_X):
             break
-        if i == 0 or i == 1 or i == 2 or i == 3 or i == len(
-                mis5) or i == len(mis5) - 1 or i == len(mis5) - 2:
+        if (
+            i == 0
+            or i == 1
+            or i == 2
+            or i == 3
+            or i == len(mis5)
+            or i == len(mis5) - 1
+            or i == len(mis5) - 2
+        ):
             mis5_X.append(mis4_X[i])
             mis5_y.append(mis4_y[i])
-        elif mis5[i - 4:i + 1] == [0, 0, 0, 0, 0]:
+        elif mis5[i - 4 : i + 1] == [0, 0, 0, 0, 0]:
             mis5_X.append(mis4_X[i])
             mis5_y.append(mis4_y[i])
-        elif mis5[i] == 1 and i<len(mis5)-3 and \
-            i<len(mis5)-4 and i<len(mis5)-5 and i<len(mis5)-6 and i<len(mis5)-7:
+        elif (
+            mis5[i] == 1
+            and i < len(mis5) - 3
+            and i < len(mis5) - 4
+            and i < len(mis5) - 5
+            and i < len(mis5) - 6
+            and i < len(mis5) - 7
+        ):
 
             miss_point = i
-            if mis4_X[miss_point -
-                      3] != 0 and mis4_X[miss_point - 2] != 0 and mis4_X[
-                          miss_point -
-                          1] != 0 and mis4_X[miss_point + 5] != 0 and mis4_X[
-                              miss_point + 6] != 0 and mis4_X[miss_point +
-                                                              7] != 0:
+            if (
+                mis4_X[miss_point - 3] != 0
+                and mis4_X[miss_point - 2] != 0
+                and mis4_X[miss_point - 1] != 0
+                and mis4_X[miss_point + 5] != 0
+                and mis4_X[miss_point + 6] != 0
+                and mis4_X[miss_point + 7] != 0
+            ):
                 num_X = [
-                    mis4_X[miss_point - 3], mis4_X[miss_point - 2],
-                    mis4_X[miss_point - 1], mis4_X[miss_point + 5],
-                    mis4_X[miss_point + 6], mis4_X[miss_point + 7]
+                    mis4_X[miss_point - 3],
+                    mis4_X[miss_point - 2],
+                    mis4_X[miss_point - 1],
+                    mis4_X[miss_point + 5],
+                    mis4_X[miss_point + 6],
+                    mis4_X[miss_point + 7],
                 ]
                 num_y = [
-                    mis4_y[miss_point - 3], mis4_y[miss_point - 2],
-                    mis4_y[miss_point - 1], mis4_y[miss_point + 5],
-                    mis4_y[miss_point + 6], mis4_y[miss_point + 7]
+                    mis4_y[miss_point - 3],
+                    mis4_y[miss_point - 2],
+                    mis4_y[miss_point - 1],
+                    mis4_y[miss_point + 5],
+                    mis4_y[miss_point + 6],
+                    mis4_y[miss_point + 7],
                 ]
                 x_mis5 = np.array(num_X)
                 y_mis5 = np.array(num_y)
@@ -645,8 +755,8 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
 
                 for j in range(1, 6):
                     insert_X = (
-                        (mis4_X[miss_point + 5] - mis4_X[miss_point - 1]) /
-                        6) * j + mis4_X[miss_point - 1]
+                        (mis4_X[miss_point + 5] - mis4_X[miss_point - 1]) / 6
+                    ) * j + mis4_X[miss_point - 1]
                     insert_y = np.polyval(f1, insert_X)
                     mis5_X.append(insert_X)
                     mis5_y.append(insert_y)
@@ -661,36 +771,33 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
                 mis5_y.append(mis4_y[i + 3])
                 mis5_X.append(mis4_X[i + 4])
                 mis5_y.append(mis4_y[i + 4])
-    
 
-    while len(mis5_X)<len(df):
+    while len(mis5_X) < len(df):
         mis5_X.append(0)
         mis5_y.append(0)
-    while len(mis5_X)>len(df):
-        mis5_X=mis5_X[:-1]
-        mis5_y=mis5_y[:-1]
+    while len(mis5_X) > len(df):
+        mis5_X = mis5_X[:-1]
+        mis5_y = mis5_y[:-1]
 
+    court_lx = court[0][0]
+    court_ly = court[0][1]
+    court_rx = court[5][0]
+    court_ry = court[5][1]
 
-    court_lx=court[0][0]
-    court_ly=court[0][1]
-    court_rx=court[5][0]
-    court_ry=court[5][1]
-    
     # for i in range(len(x)):
     #     if mis5_X[i]>court_rx or mis5_y[i]>court_ry:
     #         mis5_y[i]=0
     #         mis5_X[i]=0
 
-    df['X'] = mis5_X
-    df['Y'] = mis5_y
+    df["X"] = mis5_X
+    df["Y"] = mis5_y
 
-
-    trajectory=Trajectory(df.copy())
+    trajectory = Trajectory(df.copy())
     traj_filter = TrajectoryFilter()
     trajectory = traj_filter.filter_trajectory(trajectory)
 
-    df['X'] = trajectory.X
-    df['Y'] = trajectory.Y
+    df["X"] = trajectory.X
+    df["Y"] = trajectory.Y
 
     for index, row in df.iterrows():
         # the transfrom is to avoid int68 which leads to json something wrong
@@ -699,11 +806,11 @@ def smooth(json_path, court,save_path="res/ball/loca_info(denoise)"):
         x = int(row["X"])
         y = int(row["Y"])
 
-        if x==0 or y==0:
-            visible=0
+        if x == 0 or y == 0:
+            visible = 0
         else:
-            visible=1
-        
+            visible = 1
+
         # do something with the values
         ball_dict = {
             frame: {

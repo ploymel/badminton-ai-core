@@ -15,9 +15,10 @@ from utils import read_json
 
 
 class NetDetect(object):
-    '''
+    """
     Tasks involving Keypoint RCNNs
-    '''
+    """
+
     def __init__(self):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.normal_net_info = None
@@ -30,7 +31,7 @@ class NetDetect(object):
         self.normal_net_info = None
 
     def setup_RCNN(self):
-        self.__net_kpRCNN = torch.load('src/models/weights/net_kpRCNN.pth')
+        self.__net_kpRCNN = torch.load("src/models/weights/net_kpRCNN.pth")
         self.__net_kpRCNN.to(self.device).eval()
 
     def del_RCNN(self):
@@ -53,18 +54,17 @@ class NetDetect(object):
         # net detect don't need to do bisection search.
         if reference_path is not None:
             reference_data = read_json(reference_path)
-            self.normal_net_info = reference_data['net_info']
+            self.normal_net_info = reference_data["net_info"]
             if self.normal_net_info is None:
                 video.release()
                 return total_frames
-            self.__multi_points = self.__partition(
-                self.normal_net_info).tolist()
+            self.__multi_points = self.__partition(self.normal_net_info).tolist()
 
-            frame_number = reference_data.get('frame')
+            frame_number = reference_data.get("frame")
             if frame_number is None:
-                frame_number = reference_data.get('first_rally_frame')
+                frame_number = reference_data.get("first_rally_frame")
                 if frame_number is None:
-                    print('Error: frame number not found in reference data')
+                    print("Error: frame number not found in reference data")
                     video.release()
                     sys.exit(1)
 
@@ -116,9 +116,7 @@ class NetDetect(object):
                 net_info_list.append(net_info)
             else:
                 if current_frame + skip_frames >= total_frames:
-                    print(
-                        "Fail to pre-process! Please to check the video or program!"
-                    )
+                    print("Fail to pre-process! Please to check the video or program!")
                     exit(0)
                 video.set(cv2.CAP_PROP_POS_FRAMES, current_frame + skip_frames)
                 last_count = 0
@@ -143,25 +141,35 @@ class NetDetect(object):
         image = image.to(self.device)
 
         output = self.__net_kpRCNN(image)
-        scores = output[0]['scores'].detach().cpu().numpy()
+        scores = output[0]["scores"].detach().cpu().numpy()
         high_scores_idxs = np.where(scores > 0.7)[0].tolist()
-        post_nms_idxs = torchvision.ops.nms(
-            output[0]['boxes'][high_scores_idxs],
-            output[0]['scores'][high_scores_idxs], 0.3).cpu().numpy()
+        post_nms_idxs = (
+            torchvision.ops.nms(
+                output[0]["boxes"][high_scores_idxs],
+                output[0]["scores"][high_scores_idxs],
+                0.3,
+            )
+            .cpu()
+            .numpy()
+        )
 
-        if len(output[0]['keypoints'][high_scores_idxs][post_nms_idxs]) == 0:
+        if len(output[0]["keypoints"][high_scores_idxs][post_nms_idxs]) == 0:
             self.got_info = False
             return None, self.got_info
 
         keypoints = []
-        for kps in output[0]['keypoints'][high_scores_idxs][
-                post_nms_idxs].detach().cpu().numpy():
+        for kps in (
+            output[0]["keypoints"][high_scores_idxs][post_nms_idxs]
+            .detach()
+            .cpu()
+            .numpy()
+        ):
             keypoints.append([list(map(int, kp[:2])) for kp in kps])
 
         self.__true_net_points = copy.deepcopy(keypoints[0])
-        '''
+        """
         l -> left, r -> right, y = a * x + b
-        '''
+        """
 
         self.__correct_points = self.__correction()
 
@@ -172,11 +180,9 @@ class NetDetect(object):
                 return None, self.got_info
 
         if self.normal_net_info is None:
-            self.__multi_points = self.__partition(
-                self.__correct_points).tolist()
+            self.__multi_points = self.__partition(self.__correct_points).tolist()
         else:
-            self.__multi_points = self.__partition(
-                self.normal_net_info).tolist()
+            self.__multi_points = self.__partition(self.normal_net_info).tolist()
 
         self.got_info = True
 
@@ -189,8 +195,7 @@ class NetDetect(object):
         elif mode == "frame_select":
             if self.__correct_points is None:
                 return image
-            self.__multi_points = self.__partition(
-                self.__correct_points).tolist()
+            self.__multi_points = self.__partition(self.__correct_points).tolist()
 
         image_copy = image.copy()
         c_edges = [[0, 1], [2, 3], [0, 4], [1, 5]]
@@ -200,13 +205,14 @@ class NetDetect(object):
 
         # draw the net
         for e in c_edges:
-            cv2.line(image_copy, (int(self.__multi_points[e[0]][0]),
-                                  int(self.__multi_points[e[0]][1])),
-                     (int(self.__multi_points[e[1]][0]),
-                      int(self.__multi_points[e[1]][1])),
-                     net_color_edge,
-                     2,
-                     lineType=cv2.LINE_AA)
+            cv2.line(
+                image_copy,
+                (int(self.__multi_points[e[0]][0]), int(self.__multi_points[e[0]][1])),
+                (int(self.__multi_points[e[1]][0]), int(self.__multi_points[e[1]][1])),
+                net_color_edge,
+                2,
+                lineType=cv2.LINE_AA,
+            )
 
         for kps in [self.__multi_points]:
             for kp in kps:

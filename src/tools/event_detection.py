@@ -43,11 +43,11 @@ def get_point_line_distance(point, line):
         return math.fabs(point_x - line_s_x)
     if line_e_y - line_s_y == 0:
         return math.fabs(point_y - line_s_y)
-    #斜率
+    # 斜率
     k = (line_e_y - line_s_y) / (line_e_x - line_s_x)
-    #截距
+    # 截距
     b = line_s_y - k * line_s_x
-    #带入公式得到距离dis
+    # 带入公式得到距离dis
     dis = math.fabs(k * point_x - point_y + b) / math.pow(k * k + 1, 0.5)
     return dis
 
@@ -79,8 +79,13 @@ def event_detect(json_path, result_path):
         realy.append(int(float(list1[i][3])))
         if int(float(list1[i][2])) != 0:
             front_zeros[num] = count
-            points.append((int(float(list1[i][2])), int(float(list1[i][3])),
-                           int(float(list1[i][0]))))
+            points.append(
+                (
+                    int(float(list1[i][2])),
+                    int(float(list1[i][3])),
+                    int(float(list1[i][0])),
+                )
+            )
             num += 1
         else:
             count += 1
@@ -103,21 +108,21 @@ def event_detect(json_path, result_path):
     # print curve peaks
     # print(peaks)
 
-    if (len(peaks) >= 5):
-        lower = np.argmin(y[peaks[0]:peaks[1]])
+    if len(peaks) >= 5:
+        lower = np.argmin(y[peaks[0] : peaks[1]])
         if (y[peaks[0]] - lower) < 5:
             peaks = np.delete(peaks, 0)
 
-        lower = np.argmin(y[peaks[-2]:peaks[-1]])
+        lower = np.argmin(y[peaks[-2] : peaks[-1]])
         if (y[peaks[-1]] - lower) < 5:
             peaks = np.delete(peaks, -1)
 
     print()
-    print('Begin : ', end='')
+    print("Begin : ", end="")
     start_point = 0
 
     for i in range(len(y) - 1):
-        if ((y[i] - y[i + 1]) / (z[i + 1] - z[i]) >= 5):
+        if (y[i] - y[i + 1]) / (z[i + 1] - z[i]) >= 5:
             start_point = i + front_zeros[i]
             Predict_hit_points[int(start_point)] = 1
             print(int(start_point) + start_frame)
@@ -125,54 +130,63 @@ def event_detect(json_path, result_path):
 
     end_point = 10000
 
-    print('Predict points : ')
-    plt.plot(z, y * -1, '-')
+    print("Predict points : ")
+    plt.plot(z, y * -1, "-")
     for i in range(len(peaks)):
-        print(peaks[i] + int(front_zeros[peaks[i]] + start_frame), end=',')
-        if (peaks[i] + int(front_zeros[peaks[i]]) >= start_point
-                and peaks[i] + int(front_zeros[peaks[i]]) <= end_point):
+        print(peaks[i] + int(front_zeros[peaks[i]] + start_frame), end=",")
+        if (
+            peaks[i] + int(front_zeros[peaks[i]]) >= start_point
+            and peaks[i] + int(front_zeros[peaks[i]]) <= end_point
+        ):
             Predict_hit_points[peaks[i] + int(front_zeros[peaks[i]])] = 1
 
-    #打擊的特定frame = peaks[i]+int(front_zeros[peaks[i]])
+    # 打擊的特定frame = peaks[i]+int(front_zeros[peaks[i]])
     print()
-    print('Extra points : ')
+    print("Extra points : ")
     for i in range(len(peaks) - 1):
         start = peaks[i]
         end = peaks[i + 1] + 1
         upper = []
-        plt.plot(z[start:end], y[start:end] * -1, '-')
-        lower = np.argmin(y[start:end])  #找到最低谷(也就是從最高點開始下墜到下一個擊球點),以此判斷扣殺或平球軌跡
+        plt.plot(z[start:end], y[start:end] * -1, "-")
+        lower = np.argmin(
+            y[start:end]
+        )  # 找到最低谷(也就是從最高點開始下墜到下一個擊球點),以此判斷扣殺或平球軌跡
         for j in range(start + lower, end + 1):
             if (j - (start + lower) > 5) and (end - j > 5):
                 if (y[j] - y[j - 1]) * 3 < (y[j + 1] - y[j]):
-                    print(j + start_frame, end=',')
+                    print(j + start_frame, end=",")
                     ang[j + int(front_zeros[j])] = 1
 
                 point = [x[j], y[j]]
                 line = [x[j - 1], y[j - 1], x[j + 1], y[j + 1]]
                 # if get_point_line_distance(point,line) > 2.5:
-                if angle([x[j - 1], y[j - 1], x[j], y[j]],
-                         [x[j], y[j], x[j + 1], y[j + 1]]) > 130:
-                    print(j + start_frame, end=',')
+                if (
+                    angle(
+                        [x[j - 1], y[j - 1], x[j], y[j]],
+                        [x[j], y[j], x[j + 1], y[j + 1]],
+                    )
+                    > 130
+                ):
+                    print(j + start_frame, end=",")
                     ang[j + int(front_zeros[j])] = 1
 
     ang, _ = find_peaks(ang, distance=15)
-    #final_predict, _  = find_peaks(Predict_hit_points, distance=10)
+    # final_predict, _  = find_peaks(Predict_hit_points, distance=10)
     for i in ang:
         Predict_hit_points[i] = 1
     Predict_hit_points, _ = find_peaks(Predict_hit_points, distance=5)
     final_predict = []
-    for i in (Predict_hit_points):
+    for i in Predict_hit_points:
         final_predict.append(i)
 
     print()
-    print('Final predict : ')
+    print("Final predict : ")
     for pred in list(final_predict):
         print(pred + start_frame, end=",")
 
     print()
-    if len(list(final_predict))>0:
-        print(f'End : {list(final_predict)[-1]+ start_frame}')
+    if len(list(final_predict)) > 0:
+        print(f"End : {list(final_predict)[-1]+ start_frame}")
     else:
         print("End : ")
 
@@ -182,7 +196,6 @@ def event_detect(json_path, result_path):
     os.makedirs(event_path, exist_ok=True)
     os.makedirs(img_path, exist_ok=True)
 
-        
     for i in range(len(frames)):
         event_dict = {}
         if i in final_predict:
