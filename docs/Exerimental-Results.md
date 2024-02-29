@@ -7,6 +7,7 @@ simple GRU-based recurrent network that consumes court, pose, and
 2D shuttlecock information to make hit predictions
 
 ![HitDetect](images/network/hit-detect.png)
+
 ref: [MonoTrack: Shuttle trajectory reconstruction from monocular badminton video](https://arxiv.org/pdf/2204.01899v2.pdf)
 ### Results
 
