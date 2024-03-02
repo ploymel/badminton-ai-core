@@ -48,7 +48,7 @@ class NetDetect(object):
         last_count = 0
         total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
         net_info_list = []
-        # the number of skip frams per time
+        # the number of skip frames per time
         skip_frames = max(int(fps) // 5, 5)
 
         # net detect don't need to do bisection search.
@@ -116,7 +116,7 @@ class NetDetect(object):
                 net_info_list.append(net_info)
             else:
                 if current_frame + skip_frames >= total_frames:
-                    print("Fail to pre-process! Please to check the video or program!")
+                    print("Fail to pre-process! Please go check the video or program!")
                     exit(0)
                 video.set(cv2.CAP_PROP_POS_FRAMES, current_frame + skip_frames)
                 last_count = 0
