@@ -223,21 +223,15 @@ class ScoreDetect(object):
 
                 # If there is a fixed scorebox, use that
                 if self.fixed_scorebox is not None:
-                    # Crop scores
-                    top_score_img = crop_score(
-                        img, self.fixed_scorebox["scorebox_top"]["box"]
-                    )
-                    bottom_score_img = crop_score(
-                        img, self.fixed_scorebox["scorebox_buttom"]["box"]
-                    )
-                else:
-                    # Crop scores
-                    top_score_img = crop_score(
-                        img, self.__correct_points["scorebox_top"]["box"]
-                    )
-                    bottom_score_img = crop_score(
-                        img, self.__correct_points["scorebox_buttom"]["box"]
-                    )
+                    self.__correct_points = self.fixed_scorebox
+
+                # Crop scores
+                top_score_img = crop_score(
+                    img, self.__correct_points["scorebox_top"]["box"]
+                )
+                bottom_score_img = crop_score(
+                    img, self.__correct_points["scorebox_buttom"]["box"]
+                )
 
                 # Preprocess input images
                 pixel_values = self.__score_reader_processor(
@@ -264,6 +258,7 @@ class ScoreDetect(object):
                     if self.fixed_scorebox is not None:
                         if self.__check_isvalid_score(self.__correct_points):
                             self.fixed_scorebox = self.__correct_points
+                            print("Fixed scorebox!")
 
                 except:
                     self.got_info = False
