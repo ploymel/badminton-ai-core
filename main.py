@@ -265,7 +265,7 @@ for root, dirs, files in os.walk(folder_path):
                         if ext.lower() in [".mp4"]:
                             res_video_path = os.path.join(res_root, res_file)
                             print(res_video_path)
-                            ball_detect(
+                            loca_json_path = ball_detect(
                                 res_video_path,
                                 f"{result_path}/ball",
                                 f"{result_path}/courts/have_court/{video_name + '.json'}",

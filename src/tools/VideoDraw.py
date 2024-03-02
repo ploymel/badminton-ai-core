@@ -132,7 +132,11 @@ for root, dirs, files in os.walk(folder_path):
                     if not ret:
                         break
 
-                    joints = players_dict[f"{current_frame}"]
+                    try:
+                        joints = players_dict[f"{current_frame}"]
+                    except:
+                        pbar.update(1)
+                        continue
                     players_joints = [joints["top"], joints["bottom"]]
 
                     can_draw = True

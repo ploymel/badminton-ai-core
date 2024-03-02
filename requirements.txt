@@ -1,2 +1,4 @@
 ultralytics
 torchsummary
+pytube
+ffmpeg-python
