@@ -239,32 +239,9 @@ def ball_detect(video_path, result_path, have_court_path):
         )
         logging.error(traceback.format_exc())
 
-    # capture hitting frame number
-    try:
-        # Code block that may raise exceptions
-        loca_save_dir = os.path.join(result_path, f"loca_info/{orivi_name}")
-        loca_json_path = f"{loca_save_dir}/{video_name}.json"
-        event_detect(loca_json_path, f"{result_path}")
-        # out.release()
-    except KeyboardInterrupt:
-        print(
-            "Caught exception type on main.py ball_detect:",
-            type(KeyboardInterrupt).__name__,
-        )
-        logging.basicConfig(
-            filename="logs/error.log",
-            level=logging.ERROR,
-            format="%(asctime)s - %(levelname)s - %(message)s",
-        )
-        logging.error(traceback.format_exc())
-        exit()
-    except Exception:
-        print("Caught exception type on main.py ball_detect:", type(Exception).__name__)
-        logging.basicConfig(
-            filename="logs/error.log",
-            level=logging.ERROR,
-            format="%(asctime)s - %(levelname)s - %(message)s",
-        )
-        logging.error(traceback.format_exc())
-
     vid_cap.release()
+
+    loca_save_dir = os.path.join(result_path, f"loca_info/{orivi_name}")
+    loca_json_path = f"{loca_save_dir}/{video_name}.json"
+
+    return loca_json_path

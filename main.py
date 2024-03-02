@@ -82,7 +82,7 @@ for root, dirs, files in os.walk(folder_path):
             write_json(video_dict, video_name, full_video_path)
 
             # all useful classes
-            # pose_detect = PoseDetect()
+            pose_detect = PoseDetect()
             court_detect = CourtDetect()
             net_detect = NetDetect()
             score_detect = ScoreDetect()
@@ -186,25 +186,25 @@ for root, dirs, files in os.walk(folder_path):
                     # player detect, score detect and court detect
                     court_info, have_court = court_detect.get_court_info(frame)
                     score_info, have_score = score_detect.get_score_info(frame)
-                    # if have_court:
+                    if have_court:
 
-                    # # pose_detect.setup_RCNN()
-                    # original_outputs, human_joints = pose_detect.get_human_joints(
-                    #     frame
-                    # )
-                    # # pose_detect.del_RCNN()
+                        # pose_detect.setup_RCNN()
+                        original_outputs, human_joints = pose_detect.get_human_joints(
+                            frame
+                        )
+                        # pose_detect.del_RCNN()
 
-                    # have_player, players_joints = court_detect.player_detection(
-                    #     original_outputs
-                    # )
+                        have_player, players_joints = court_detect.player_detection(
+                            original_outputs
+                        )
 
-                    #             if have_player:
-                    #                 players_dict = {
-                    #                     str(current_frame): {
-                    #                         "top": players_joints[0],
-                    #                         "bottom": players_joints[1],
-                    #                     }
-                    #                 }
+                        if have_player:
+                            players_dict = {
+                                str(current_frame): {
+                                    "top": players_joints[0],
+                                    "bottom": players_joints[1],
+                                }
+                            }
 
                     video_made = video_cilp.add_frame(have_court, frame, current_frame)
                     if video_made:
@@ -244,53 +244,53 @@ for root, dirs, files in os.walk(folder_path):
                         score_dict, video_name, f"{result_path}/scores/player_score"
                     )
 
-                    #         write_json(
-                    #             players_dict, video_name, f"{result_path}/players/player_kp"
-                    #         )
+                    write_json(
+                        players_dict, video_name, f"{result_path}/players/player_kp"
+                    )
 
                     pbar.update(1)
 
             # Release the video capture and writer objects
             video.release()
 
-            # try:
-            #     # Code block that may raise exceptions
-            #     # tracknet
-            #     print("-" * 10 + "Starting Ball Detection" + "-" * 10)
-            #     for res_root, res_dirs, res_files in os.walk(
-            #         f"{result_path}/videos/{video_name}"
-            #     ):
-            #         for res_file in res_files:
-            #             _, ext = os.path.splitext(res_file)
-            #             if ext.lower() in [".mp4"]:
-            #                 res_video_path = os.path.join(res_root, res_file)
-            #                 print(res_video_path)
-            #                 ball_detect(
-            #                     res_video_path,
-            #                     f"{result_path}/ball",
-            #                     f"{result_path}/courts/have_court/{video_name + '.json'}",
-            #                 )
-            #     print("-" * 10 + "End Badminton Detection" + "-" * 10)
-            # except KeyboardInterrupt:
-            #     print(
-            #         "Caught exception type on main.py ball_detect:",
-            #         type(KeyboardInterrupt).__name__,
-            #     )
-            #     logging.basicConfig(
-            #         filename="logs/error.log",
-            #         level=logging.ERROR,
-            #         format="%(asctime)s - %(levelname)s - %(message)s",
-            #     )
-            #     logging.error(traceback.format_exc())
-            #     exit()
-            # except Exception:
-            #     print(
-            #         "Caught exception type on main.py ball_detect:",
-            #         type(Exception).__name__,
-            #     )
-            #     logging.basicConfig(
-            #         filename="logs/error.log",
-            #         level=logging.ERROR,
-            #         format="%(asctime)s - %(levelname)s - %(message)s",
-            #     )
-            #     logging.error(traceback.format_exc())
+            try:
+                # Code block that may raise exceptions
+                # tracknet
+                print("-" * 10 + "Starting Ball Detection" + "-" * 10)
+                for res_root, res_dirs, res_files in os.walk(
+                    f"{result_path}/videos/{video_name}"
+                ):
+                    for res_file in res_files:
+                        _, ext = os.path.splitext(res_file)
+                        if ext.lower() in [".mp4"]:
+                            res_video_path = os.path.join(res_root, res_file)
+                            print(res_video_path)
+                            ball_detect(
+                                res_video_path,
+                                f"{result_path}/ball",
+                                f"{result_path}/courts/have_court/{video_name + '.json'}",
+                            )
+                print("-" * 10 + "End Badminton Detection" + "-" * 10)
+            except KeyboardInterrupt:
+                print(
+                    "Caught exception type on main.py ball_detect:",
+                    type(KeyboardInterrupt).__name__,
+                )
+                logging.basicConfig(
+                    filename="logs/error.log",
+                    level=logging.ERROR,
+                    format="%(asctime)s - %(levelname)s - %(message)s",
+                )
+                logging.error(traceback.format_exc())
+                exit()
+            except Exception:
+                print(
+                    "Caught exception type on main.py ball_detect:",
+                    type(Exception).__name__,
+                )
+                logging.basicConfig(
+                    filename="logs/error.log",
+                    level=logging.ERROR,
+                    format="%(asctime)s - %(levelname)s - %(message)s",
+                )
+                logging.error(traceback.format_exc())

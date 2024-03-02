@@ -233,6 +233,9 @@ class ScoreDetect(object):
                     img, self.__correct_points["scorebox_buttom"]["box"]
                 )
 
+                bottom_score_img = cv2.resize(bottom_score_img, (100, 100))
+                top_score_img = cv2.resize(top_score_img, (100, 100))
+
                 # Preprocess input images
                 pixel_values = self.__score_reader_processor(
                     images=[top_score_img, bottom_score_img], return_tensors="pt"
@@ -255,7 +258,7 @@ class ScoreDetect(object):
                         generated_text[1]
                     )
 
-                    if self.fixed_scorebox is not None:
+                    if self.fixed_scorebox is None:
                         if self.__check_isvalid_score(self.__correct_points):
                             self.fixed_scorebox = self.__correct_points
                             print("Fixed scorebox!")
