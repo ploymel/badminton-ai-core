@@ -82,12 +82,14 @@ class ScoreDetect(object):
         self.normal_scorebox_info = None
         self.got_info = False
         self.mse = None
+        self.fixed_scorebox = None
         self.setup_YOLO()
         self.setup_trOCR()
 
     def reset(self):
         self.got_info = False
         self.normal_scorebox_info = None
+        self.fixed_scorebox = None
 
     def setup_YOLO(self):
         self.___scorebox_detect_YOLO = YOLO(
@@ -178,6 +180,19 @@ class ScoreDetect(object):
             return False
         return True
 
+    def __check_isvalid_score(self, scorebox):
+        if (
+            scorebox["scorebox_top"]["score"] == 0
+            and scorebox["scorebox_buttom"]["score"] == 1
+        ):
+            return True
+        if (
+            scorebox["scorebox_top"]["score"] == 1
+            and scorebox["scorebox_buttom"]["score"] == 0
+        ):
+            return True
+        return False
+
     def get_score_info(self, img):
         image = img.copy()
         self.mse = None
@@ -206,13 +221,23 @@ class ScoreDetect(object):
 
                 self.got_info = True
 
-                # Crop scores
-                top_score_img = crop_score(
-                    img, self.__correct_points["scorebox_top"]["box"]
-                )
-                bottom_score_img = crop_score(
-                    img, self.__correct_points["scorebox_buttom"]["box"]
-                )
+                # If there is a fixed scorebox, use that
+                if self.fixed_scorebox is not None:
+                    # Crop scores
+                    top_score_img = crop_score(
+                        img, self.fixed_scorebox["scorebox_top"]["box"]
+                    )
+                    bottom_score_img = crop_score(
+                        img, self.fixed_scorebox["scorebox_buttom"]["box"]
+                    )
+                else:
+                    # Crop scores
+                    top_score_img = crop_score(
+                        img, self.__correct_points["scorebox_top"]["box"]
+                    )
+                    bottom_score_img = crop_score(
+                        img, self.__correct_points["scorebox_buttom"]["box"]
+                    )
 
                 # Preprocess input images
                 pixel_values = self.__score_reader_processor(
@@ -220,6 +245,7 @@ class ScoreDetect(object):
                 ).pixel_values
                 pixel_values = pixel_values.to(self.device)
 
+                # Run recognition
                 generated_ids = self.__score_reader_trOCR.generate(
                     pixel_values, max_new_tokens=2
                 )
@@ -227,28 +253,21 @@ class ScoreDetect(object):
                     generated_ids, skip_special_tokens=True
                 )
 
-                if len(generated_text) != 2:
-                    self.__correct_points["scorebox_top"]["score"] = None
-                    self.__correct_points["scorebox_buttom"]["score"] = None
-                else:
+                try:
+                    self.__correct_points["scorebox_top"]["score"] = int(
+                        generated_text[0]
+                    )
+                    self.__correct_points["scorebox_buttom"]["score"] = int(
+                        generated_text[1]
+                    )
 
-                    self.__correct_points["scorebox_top"]["score"] = generated_text[0]
+                    if self.fixed_scorebox is not None:
+                        if self.__check_isvalid_score(self.__correct_points):
+                            self.fixed_scorebox = self.__correct_points
 
-                    self.__correct_points["scorebox_buttom"]["score"] = generated_text[
-                        1
-                    ]
-
-                    # try:
-                    #     self.__correct_points["scorebox_top"]["score"] = int(
-                    #         generated_text[0]
-                    #     )
-                    #     self.__correct_points["scorebox_buttom"]["score"] = int(
-                    #         generated_text[1]
-                    #     )
-
-                    # except:
-                    #     self.__correct_points["scorebox_top"]["score"] = None
-                    #     self.__correct_points["scorebox_buttom"]["score"] = None
+                except:
+                    self.got_info = False
+                    return None, self.got_info
 
                 return self.__correct_points, self.got_info
 
