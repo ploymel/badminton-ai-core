@@ -161,9 +161,9 @@ for root, dirs, files in os.walk(folder_path):
                             video_name,
                             f"{result_path}/scores/have_score",
                         )
-                        # write_json(
-                        #     players_dict, video_name, f"{result_path}/players/player_kp"
-                        # )
+                        write_json(
+                            players_dict, video_name, f"{result_path}/players/player_kp"
+                        )
                         court_mse_dict = {str(current_frame): court_detect.mse}
                         write_json(
                             court_mse_dict,
