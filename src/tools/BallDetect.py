@@ -57,7 +57,9 @@ def ball_detect(video_path, result_path, have_court_path):
 
     cd_save_dir = os.path.join(f"{result_path}/courts", f"court_kp")
     cd_json_path = f"{cd_save_dir}/{orivi_name}.json"
-    court = read_json(cd_json_path.replace("/ball/", "/"))["court_info"]
+    court_kp_dir, fname = os.path.split(cd_json_path.replace("/ball/", "/"))
+    fname = "_".join(fname.split("_")[: len(fname.split("_")) - 1]) + ".json"
+    court = read_json(os.path.join(court_kp_dir, fname))["court_info"]
 
     have_court = read_json(have_court_path)
     # get have_court from start_frame
