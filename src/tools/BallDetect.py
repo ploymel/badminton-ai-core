@@ -55,11 +55,11 @@ def ball_detect(video_path, result_path, have_court_path):
 
     orivi_name, start_frame = extract_numbers(video_name)
 
-    cd_save_dir = os.path.join(f"{result_path}/courts", f"court_kp")
-    cd_json_path = f"{cd_save_dir}/{orivi_name}.json"
-    court_kp_dir, fname = os.path.split(cd_json_path.replace("/ball/", "/"))
-    fname = "_".join(fname.split("_")[: len(fname.split("_")) - 1]) + ".json"
-    court = read_json(os.path.join(court_kp_dir, fname))["court_info"]
+    # cd_save_dir = os.path.join(f"{result_path}/courts", f"court_kp")
+    # cd_json_path = f"{cd_save_dir}/{orivi_name}.json"
+    court = read_json(have_court_path.replace("/have_court/", "/court_kp/"))[
+        "court_info"
+    ]
 
     have_court = read_json(have_court_path)
     # get have_court from start_frame
@@ -72,7 +72,7 @@ def ball_detect(video_path, result_path, have_court_path):
         if start_count and v:
             list_of_frames.append(k)
 
-    print("List of true frames: ", list_of_frames)
+    # print("List of true frames: ", list_of_frames)
 
     d_save_dir = os.path.join(result_path, f"loca_info/{orivi_name}")
     f_source = str(video_path)
@@ -97,6 +97,7 @@ def ball_detect(video_path, result_path, have_court_path):
     #                       fps, (w, h))
 
     count = 0
+    last_count = 0
     with tqdm(total=video_len) as pbar:
         while vid_cap.isOpened():
             imgs = []
@@ -135,10 +136,15 @@ def ball_detect(video_path, result_path, have_court_path):
             y_preds = y_preds * 255
             y_preds = y_preds.astype("uint8")
 
+            try:
+                last_count = int(list_of_frames[count])
+            except:
+                last_count = last_count + 1
+
             for i in range(3):
                 if np.amax(y_preds[i]) <= 0:
                     ball_dict = {
-                        f"{list_of_frames[count]}": {
+                        f"{last_count}": {
                             "visible": 0,
                             "x": 0,
                             "y": 0,
@@ -175,7 +181,7 @@ def ball_detect(video_path, result_path, have_court_path):
                     )
 
                     ball_dict = {
-                        f"{list_of_frames[count]}": {
+                        f"{last_count}": {
                             "visible": 1,
                             "x": cx_pred,
                             "y": cy_pred,
@@ -195,7 +201,7 @@ def ball_detect(video_path, result_path, have_court_path):
 
         while count < video_len:
             ball_dict = {
-                f"{list_of_frames[count]}": {
+                f"{last_count}": {
                     "visible": 0,
                     "x": 0,
                     "y": 0,
