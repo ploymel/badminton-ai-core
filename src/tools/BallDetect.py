@@ -197,6 +197,7 @@ def ball_detect(video_path, result_path, have_court_path):
                     #                                  cx_pred, cy_pred))
 
                 count += 1
+                last_count += 1
                 pbar.update(1)
 
         while count < video_len:
@@ -209,6 +210,7 @@ def ball_detect(video_path, result_path, have_court_path):
             }
             write_json(ball_dict, video_name, f"{d_save_dir}")
             count += 1
+            last_count += 1
             pbar.update(1)
 
     # denoise file save path
