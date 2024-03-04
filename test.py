@@ -1,6 +1,6 @@
-loca_json_path = "res/ball/loca_info/1point/1point_918-1305.json"
-court_kp_path = "res/courts/court_kp/1point.json"
-players_kp_path = "res/players/player_kp/1point.json"
+loca_json_path = "res/ball/loca_info/set1/set1_1542-2189.json"
+court_kp_path = "res/courts/court_kp/set1.json"
+players_kp_path = "res/players/player_kp/set1.json"
 
 from src.tools.utils import read_json
 from src.models.HitDetect import HitDetector, HitModel
@@ -13,7 +13,6 @@ def event_ml_detection():
     players_kp = read_json(players_kp_path)
 
     input_data = {"frame": [], "top": [], "bottom": [], "court": [], "ball": []}
-    ball_visible = []
     # convert to dataframe
     for frame in shuttle.keys():
         try:

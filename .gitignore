@@ -1,6 +1,7 @@
 # Model weights folder
 src/models/weights/
 *.mp4
+.DS_store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

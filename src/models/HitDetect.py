@@ -60,7 +60,7 @@ class HitDetector(object):
 
     def setup_HitDetect(self):
         self.__hitdetect = torch.load(
-            "src/models/weights/hitdetect.pth", map_location=self.device
+            "src/models/weights/hit_detectv2.pth", map_location=self.device
         )
         self.__hitdetect.to(self.device).eval()
 
@@ -132,7 +132,7 @@ class HitDetector(object):
         return optim_hit_lists
 
     def __optimize_final_list_corrected(
-        self, final_list, fps=30, num_consecutive_frames=5
+        self, final_list, fps=30, num_consecutive_frames=6
     ):
         optimized_list = (
             final_list.copy()
@@ -145,17 +145,25 @@ class HitDetector(object):
 
         i = 0
         while i < len(final_list):
-            if final_list[i] in [1, 2]:
+            if final_list[i] in [1, 2]:  # Check if the current element is either 1 or 2
                 start = i
+                # Move forward as long as the next element is the same as the current one
                 while (
                     i + 1 < len(final_list) and final_list[i + 1] == final_list[start]
                 ):
                     i += 1
-                end = i + 1
-                if (
-                    end - start >= num_consecutive_frames
-                ):  # If sequence is long enough, apply optimization
-                    apply_optimization(start, end)
+                end = i + 1  # Mark the end of the sequence
+                sequence_length = end - start
+                # Check if the sequence is long enough and consists of the same number (either all 1s or all 2s)
+                if sequence_length >= num_consecutive_frames:
+                    apply_optimization(start, end)  # Apply optimization to the sequence
+                elif (
+                    sequence_length < num_consecutive_frames
+                ):  # If the sequence is shorter than 6
+                    for j in range(
+                        start, end
+                    ):  # Convert all elements of this sequence to 0
+                        optimized_list[j] = 0
             i += 1
 
         # Now enforce rally hit rules
