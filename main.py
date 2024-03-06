@@ -20,6 +20,7 @@ from src.models.NetDetect import NetDetect
 from src.models.ScoreDetect import ScoreDetect
 import argparse
 from src.tools.BallDetect import ball_detect
+from src.tools.event_detection import event_detection
 import logging
 import traceback
 import warnings
@@ -269,6 +270,13 @@ for root, dirs, files in os.walk(folder_path):
                                 res_video_path,
                                 f"{result_path}/ball",
                                 f"{result_path}/courts/have_court/{video_name + '.json'}",
+                            )
+                            print("Starting event detection...")
+                            event_detection(
+                                loca_json_path,
+                                f"{result_path}/players/player_kp/{video_name + '.json'}",
+                                f"{result_path}/courts/court_kp/{video_name + '.json'}",
+                                result_path,
                             )
                 print("-" * 10 + "End Badminton Detection" + "-" * 10)
             except KeyboardInterrupt:
