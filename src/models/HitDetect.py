@@ -62,10 +62,14 @@ class HitDetector(object):
         self.__hitdetect = torch.load(
             "src/models/weights/hit_detectv2.pth", map_location=self.device
         )
+        self.__hitdetect_fallback = torch.load(
+            "src/models/weights/hit_detectv1.pth", map_location=self.device
+        )
         self.__hitdetect.to(self.device).eval()
+        self.__hitdetect_fallback.to(self.device).eval()
 
     def del_HitDetect(self):
-        del self.__hitdetect
+        del self.__hitdetect, self.__hitdetect_fallback
 
     def get_hits_event(self, data, fps):
         rows = len(data)
@@ -75,7 +79,7 @@ class HitDetector(object):
             num_to_pad = 12 - remainder
         else:
             num_to_pad = 0
-        print("Padding needs: ", remainder)
+        # print("Padding needs: ", remainder)
 
         # Pad the dataframe if necessary
         if num_to_pad > 0:
@@ -86,6 +90,7 @@ class HitDetector(object):
             data = data.reset_index(drop=True)
 
         hit_lists = []
+        hit_lists_fallback = []
         for i in range(len(data)):
             # Won't do the rest (seeing num_consecutive_frames ahead)
             if i >= len(data) - self.num_consecutive_frames:
@@ -120,16 +125,24 @@ class HitDetector(object):
                 outputs = self.__hitdetect(
                     torch.FloatTensor(input_data).to(self.device)
                 )
+                outputs_fallback = self.__hitdetect_fallback(
+                    torch.FloatTensor(input_data).to(self.device)
+                )
 
             pred = torch.argmax(outputs).item()
+            pred_fallback = torch.argmax(outputs_fallback).item()
             hit_lists.append(pred)
+            hit_lists_fallback.append(pred_fallback)
 
         # optimize the hit_lists
         optim_hit_lists = self.__optimize_final_list_corrected(
             hit_lists, fps, self.optim_num_consecutive_frames
         )
+        optim_hit_lists_fallback = self.__optimize_final_list_corrected(
+            hit_lists_fallback, fps, self.optim_num_consecutive_frames
+        )
 
-        return optim_hit_lists
+        return optim_hit_lists, optim_hit_lists_fallback
 
     def __optimize_final_list_corrected(
         self, final_list, fps=30, num_consecutive_frames=6
