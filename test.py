@@ -1,18 +1,13 @@
-loca_json_path = "res/ball/loca_info/set1/set1_134-466.json"
+loca_json_path = "res/ball/loca_info/set1/set1_3522-4089.json"
 court_kp_path = "res/courts/court_kp/set1.json"
 players_kp_path = "res/players/player_kp/set1.json"
 
 from src.tools.utils import read_json
 from src.models.HitDetect import HitDetector, HitModel
-from src.models.ShotDetect import ShotTypeModel, ShotDetect
 import pandas as pd
 
 
-def event_ml_detection():
-    shuttle = read_json(loca_json_path)
-    court_kp = read_json(court_kp_path)
-    players_kp = read_json(players_kp_path)
-
+def convert_input2dataframe(shuttle, players_kp, court_kp):
     input_data = {
         "frame": [],
         "top": [],
@@ -39,39 +34,50 @@ def event_ml_detection():
         input_data["court"].append(court_kp["court_info"])
         input_data["net"].append(court_kp["net_info"])
 
-    input_data = pd.DataFrame(input_data)
+    return pd.DataFrame(input_data)
+
+
+def event_ml_detection():
+    shuttle = read_json(loca_json_path)
+    court_kp = read_json(court_kp_path)
+    players_kp = read_json(players_kp_path)
 
     # start the model
     hit_detect = HitDetector()
-    shot_detect = ShotDetect()
+
+    # convert input data to dataframe
+    hits_data = convert_input2dataframe(shuttle, players_kp, court_kp)
 
     # get hit info
-    result, result_fallback = hit_detect.get_hits_event(input_data, fps=30)
-    # get shot types info
-    shot_type_results = shot_detect.get_shots_info(input_data)
-    print(shot_type_results)
+    result, result_fallback = hit_detect.get_hits_event(hits_data, fps=30)
 
-    input_data["pred"] = result + [0] * (len(input_data) - len(result))
-    input_data["pred_fallback"] = result_fallback + [0] * (
-        len(input_data) - len(result_fallback)
+    # copy hits data for fallback's model results
+    hits_data_fallback = hits_data.copy()
+    hits_data["pred"] = result + [0] * (len(hits_data) - len(result))
+    hits_data_fallback["pred"] = result_fallback + [0] * (
+        len(hits_data_fallback) - len(result_fallback)
     )
 
     # Identify rows to keep based on changes in the 'pred' value or the last row of the DataFrame
     # The approach uses a combination of `shift()` for comparison and handling edge cases
-    input_data["keep"] = (input_data["pred"] != input_data["pred"].shift(-1)) | (
-        input_data.index == len(input_data) - 1
+    hits_data["keep"] = (hits_data["pred"] != hits_data["pred"].shift(-1)) | (
+        hits_data.index == len(hits_data) - 1
     )
-    input_data["keep_fallback"] = (
-        input_data["pred_fallback"] != input_data["pred_fallback"].shift(-1)
-    ) | (input_data.index == len(input_data) - 1)
+    hits_data_fallback["keep"] = (
+        hits_data_fallback["pred"] != hits_data_fallback["pred"].shift(-1)
+    ) | (hits_data_fallback.index == len(hits_data_fallback) - 1)
 
     # Filter rows to keep
-    filtered_data = input_data[input_data["keep"]].drop(
+    hits_data = hits_data[hits_data["keep"]].drop(
         "keep", axis=1
     )  # Drop the temporary 'keep' column
-    filtered_data = input_data[input_data["keep_fallback"]].drop(
-        "keep_fallback", axis=1
-    )  # Drop the temporary 'keep_fallback' column
+    hits_data_fallback = hits_data_fallback[hits_data_fallback["keep"]].drop(
+        "keep", axis=1
+    )  # Drop the temporary 'keep' column (for fallback)
+
+    # drop prediction = 0
+    hits_data = hits_data.loc[hits_data["pred"] != 0]
+    hits_data_fallback = hits_data_fallback[hits_data_fallback["pred"] != 0]
 
 
 event_ml_detection()

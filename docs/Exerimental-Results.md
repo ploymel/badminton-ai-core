@@ -28,7 +28,3 @@ ref: [MonoTrack: Shuttle trajectory reconstruction from monocular badminton vide
 |After optimization|0.939|0.453|0.469|0.449|
 |After optimization (tolerance=1)|0.977|0.533|0.628|0.486|
 |After Before optimization (tolerance=3)|**0.987**|**0.678**|**0.722**|0.652|
-
-## ShotDetect
-Similar to hit detection model except shot detection adds net kp and the number of consecutive frames = 30
-
