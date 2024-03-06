@@ -71,9 +71,9 @@ class ShotDetect(object):
     def get_shots_info(self, data):
         rows = len(data)
         # Determine if padding is needed
-        remainder = rows % 12
+        remainder = rows % 30
         if remainder > 0:
-            num_to_pad = 12 - remainder
+            num_to_pad = 30 - remainder
         else:
             num_to_pad = 0
         # print("Padding needs: ", remainder)
@@ -121,8 +121,8 @@ class ShotDetect(object):
             # Loop through all available models
             for model_name, model in self.__shot_detect_models.items():
                 with torch.no_grad():
-                    outputs = model(
-                        torch.FloatTensor(input_data).to(self.device)
+                    outputs = torch.sigmoid(
+                        model(torch.FloatTensor(input_data).to(self.device))
                     ).squeeze()
 
                 shot_lists[model_name].append(outputs)
