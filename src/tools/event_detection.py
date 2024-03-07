@@ -39,7 +39,7 @@ def convert_input2dataframe(shuttle, players_kp, court_kp):
     return pd.DataFrame(input_data)
 
 
-def event_detection(json_path, players_kp_path, court_kp_path, result_path):
+def event_detect(json_path, players_kp_path, court_kp_path, result_path):
     loca_dict = read_json(json_path)
     court_kp = read_json(court_kp_path)
     players_kp = read_json(players_kp_path)

@@ -14,7 +14,6 @@ sys.path.append("src/tools")
 from TrackNet import TrackNet
 from utils import extract_numbers, write_json, read_json
 from denoise import smooth
-from event_detection import event_detect
 import logging
 import traceback
 
