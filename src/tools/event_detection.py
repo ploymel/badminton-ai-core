@@ -92,7 +92,7 @@ def event_detect(json_path, players_kp_path, court_kp_path, result_path):
 
     # write json
     for event in hits_data.to_dict(orient="records"):
-        write_json(event, json_name, f"{event_path}")
+        write_json(event, json_name, f"{event_path}", mode="a")
 
     for event in hits_data_fallback.to_dict(orient="records"):
-        write_json(event, json_name, f"{event_fallback_path}")
+        write_json(event, json_name, f"{event_fallback_path}", mode="a")

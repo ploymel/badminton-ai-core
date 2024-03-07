@@ -41,6 +41,9 @@ def write_json(data, file_name, save_path="./", mode="r+"):
         with open(full_path, "w") as file:
             json.dump(data, file, indent=4)
         return
+    elif mode == "a":
+        with open(full_path, "a") as file:
+            json.dump(data, file, indent=4)
 
     with open(full_path, "r+") as file:
         for key, value in data.items():
