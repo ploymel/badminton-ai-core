@@ -91,8 +91,13 @@ def event_detect(json_path, players_kp_path, court_kp_path, result_path):
     os.makedirs(event_fallback_path, exist_ok=True)
 
     # write json
-    for event in hits_data.to_dict(orient="records"):
-        write_json(event, json_name, f"{event_path}", mode="a")
+    write_json(
+        hits_data.to_dict(orient="records"), json_name, f"{event_path}", mode="w"
+    )
 
-    for event in hits_data_fallback.to_dict(orient="records"):
-        write_json(event, json_name, f"{event_fallback_path}", mode="a")
+    write_json(
+        hits_data_fallback.to_dict(orient="records"),
+        json_name,
+        f"{event_fallback_path}",
+        mode="w",
+    )
