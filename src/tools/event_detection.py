@@ -96,6 +96,6 @@ def event_detect(json_path, players_kp_path, court_kp_path, result_path):
     with open(full_path, "w") as file:
         json.dump(hits_data.to_dict(orient="records"), file)
 
-    full_path = os.path.join(event_path, f"{event_fallback_path}.json")
+    full_path = os.path.join(event_fallback_path, f"{json_name}.json")
     with open(full_path, "w") as file:
         json.dump(hits_data_fallback.to_dict(orient="records"), file)
