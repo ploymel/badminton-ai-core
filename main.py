@@ -18,6 +18,7 @@ from src.models.PoseDetect import PoseDetect
 from src.models.CourtDetect import CourtDetect
 from src.models.NetDetect import NetDetect
 from src.models.ScoreDetect import ScoreDetect
+from src.models.HitDetect import HitModel
 import argparse
 from src.tools.BallDetect import ball_detect
 from src.tools.event_detection import event_detect
