@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 import os
+import json
 
 
 sys.path.append("src/tools")
@@ -91,13 +92,10 @@ def event_detect(json_path, players_kp_path, court_kp_path, result_path):
     os.makedirs(event_fallback_path, exist_ok=True)
 
     # write json
-    write_json(
-        hits_data.to_dict(orient="records"), json_name, f"{event_path}", mode="w"
-    )
+    full_path = os.path.join(event_path, f"{json_name}.json")
+    with open(full_path, "w") as file:
+        json.dump(hits_data.to_dict(orient="records"), full_path)
 
-    write_json(
-        hits_data_fallback.to_dict(orient="records"),
-        json_name,
-        f"{event_fallback_path}",
-        mode="w",
-    )
+    full_path = os.path.join(event_path, f"{event_fallback_path}.json")
+    with open(full_path, "w") as file:
+        json.dump(hits_data_fallback.to_dict(orient="records"), full_path)
