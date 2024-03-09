@@ -8,6 +8,7 @@ sys.path.append("src/tools")
 sys.path.append("src/models")
 from utils import read_json, write_json, extract_numbers
 from HitDetect import HitDetector, HitModel
+from ShotDetect import ShotDetector, ShotTypeModel
 
 
 def convert_input2dataframe(shuttle, players_kp, court_kp):
@@ -47,18 +48,26 @@ def event_detect(json_path, players_kp_path, court_kp_path, result_path):
 
     # start the model
     hit_detect = HitDetector()
+    shot_detect = ShotDetector()
 
     # convert input data to dataframe
     hits_data = convert_input2dataframe(loca_dict, players_kp, court_kp)
 
     # get hit info
     result, result_fallback = hit_detect.get_hits_event(hits_data, fps=30)
+    shot_type_results = shot_detect.get_shots_info(hits_data)
 
     # copy hits data for fallback's model results
     hits_data_fallback = hits_data.copy()
     hits_data["pred"] = result + [0] * (len(hits_data) - len(result))
+    hits_data["shot_type"] = shot_type_results + [0] * (
+        len(hits_data) - len(shot_type_results)
+    )
     hits_data_fallback["pred"] = result_fallback + [0] * (
         len(hits_data_fallback) - len(result_fallback)
+    )
+    hits_data_fallback["shot_type"] = shot_type_results + [0] * (
+        len(hits_data_fallback) - len(shot_type_results)
     )
 
     # Identify rows to keep based on changes in the 'pred' value or the last row of the DataFrame

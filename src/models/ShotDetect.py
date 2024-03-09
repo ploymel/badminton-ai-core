@@ -50,7 +50,7 @@ class ShotTypeModel(nn.Module):
         return x  # Output is now logits without softmax
 
 
-class ShotDetect(object):
+class ShotDetector(object):
     """
     For predicting which shot has been hit
     """
