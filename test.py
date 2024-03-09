@@ -1,4 +1,4 @@
-loca_json_path = "res/ball/loca_info/set1/set1_702-1164.json"
+loca_json_path = "res/ball/loca_info/set1/set1_1542-2189.json"
 court_kp_path = "res/courts/court_kp/set1.json"
 players_kp_path = "res/players/player_kp/set1.json"
 
@@ -50,7 +50,6 @@ def event_ml_detection():
     # print(shot_type_results)
 
     input_data["pred"] = result + [0] * (len(input_data) - len(result))
-    # input_data["pred"] = [0] * (len(input_data) - len(result)) + result
     input_data["shot_type"] = shot_type_results + [0] * (
         len(input_data) - len(shot_type_results)
     )

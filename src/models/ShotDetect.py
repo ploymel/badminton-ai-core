@@ -79,9 +79,9 @@ class ShotDetect(object):
     def get_shots_info(self, data):
         rows = len(data)
         # Determine if padding is needed
-        remainder = rows % 30
+        remainder = rows % self.num_consecutive_frames
         if remainder > 0:
-            num_to_pad = 30 - remainder
+            num_to_pad = self.num_consecutive_frames - remainder
         else:
             num_to_pad = 0
         # print("Padding needs: ", remainder)
@@ -131,14 +131,12 @@ class ShotDetect(object):
                     torch.FloatTensor(input_data).to(self.device)
                 )
 
-            pred = torch.argmax(outputs).item()
-            shot_lists.append(pred)
+            # Get the indices of the top 3 predictions
+            top3_pred_indices = torch.topk(outputs, 3).indices.squeeze().tolist()
 
-        # convert to string
-        for idx in range(len(shot_lists)):
-            if idx == 0:
-                shot_lists[idx] = None
-            else:
-                shot_lists[idx] = self.hit_types[shot_lists[idx] - 1]
+            # Convert indices to the corresponding types, if necessary
+            top3_pred_types = [self.hit_types[pred - 1] for pred in top3_pred_indices]
+
+            shot_lists.append(top3_pred_types)
 
         return shot_lists
