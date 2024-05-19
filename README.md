@@ -26,3 +26,6 @@ python main.py --folder_path "videos" --result_path "res" --force
 ```bash
 python src/tools/VideoDraw.py --folder_path "videos" --result_path "res" --force --court --net --players --ball --trajectory
 ```
+
+## For Analysis (and top view image)
+Please refer to https://github.com/ploymel/badminton-ai-analysis which currently in development.
